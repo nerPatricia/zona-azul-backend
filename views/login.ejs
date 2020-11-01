@@ -25,12 +25,12 @@
 
         //get the value
         const email = form.email.value;
-        const password = form.password.value;
+        const senha = form.password.value;
 
         try {
             const res = await fetch('/login', {
                 method : 'POST',
-                body : JSON.stringify({ email , password}),
+                body : JSON.stringify({ email , senha}),
                 headers : {'content-type' : 'application/json'},
             });
             const data = await res.json();  

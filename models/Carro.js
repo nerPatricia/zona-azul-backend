@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-const carSchema = new mongoose.Schema({
-    user_id : {
+const carroSchema = new mongoose.Schema({
+    id_user : {
         type: String,
     },
 
@@ -29,11 +29,11 @@ const carSchema = new mongoose.Schema({
 });
 
 //fire a function after doc was saved
-carSchema.post('save', function (doc,next) {
+carroSchema.post('save', function (doc,next) {
     console.log('new carro saved',doc);
     next();
 });
 
-const Car = mongoose.model('user_carro', carSchema);
+const Carro = mongoose.model('user_carro', carroSchema,);
 
-module.exports = Car;
+module.exports = Carro;

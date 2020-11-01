@@ -1,43 +1,23 @@
 <%- include('partials/header'); -%>
-<form>
-    <h2>Log ina</h2>
-    <label for="email">Email</label>
-    <input type="text" name="email"/>
-    <div class="email error"></div>
-
-    <label for="password">Password</label>
-    <input type="number" name="password" />
-    <div class="password error"></div>
-    <button>Log in</button>
-</form>
 
 <script>
-    const form = document.querySelector('form');
-    const emailError = document.querySelector('.email.error');
-    const passwordError = document.querySelector('.password.error');
+    async function a(){       
+        const rota = '/cadastrar-carro';
     
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        //reset errors
-        emailError.textContent = '';
-        passwordError.textContent = '';
-
-        //get the value       
         try {
-            const fields = { placa : "AAA-0001", modelo : "gol", marca : "b", tipo : "???" };
-            const res = await fetch('/cadastrar-carro', {
+            let fields = {placa : 'aaa-0002' , modelo : 'b', tipo : '????', marca : 'c'}; //{ nome : 'b', sobrenome : 'b', email : "luigi@google.com" , cpf : "123456789121", celular : "123456789132", senha : '123456'};
+            let res = await fetch(rota, {
                 method : 'POST',
-                body : JSON.stringify(fields ),
+                body : JSON.stringify(fields),
                 headers : {'content-type' : 'application/json'},
             });
+            res = await res.json();
+            console.log(res);
         } catch (error) {
             console.log(error);
         }
+        //console.log(i);
+    }
 
-        
-    });
-
+    a();
 </script>
-
-<%- include('partials/footer'); -%>

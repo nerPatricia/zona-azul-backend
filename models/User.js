@@ -28,19 +28,19 @@ const userSchema = new mongoose.Schema({
         required : [true, 'email obrigatorio'], //[0] = bool, [1] = custom err msg
         unique : true,
         lowercase : true,
-        validate : [isEmail,'needs Valid Email' ], //[0] = validation function [1] = custom err msg
+        validate : [isEmail,'email invalido' ], //[0] = validation function [1] = custom err msg
     },
 
     celular : {
         type : String,
         required : [true , 'Please enter a cellphone'],
-        minlength : [11, 'Min length is 6'], //da pra definir isso
+        minlength : [9, 'tem q ter 9 numeros'], //da pra definir isso
     },
     
-    password : {
+    senha : {
         type : String,
-        required : [true , 'Please enter a password'],
-        minlength : [6, 'Min length is 6'], //da pra definir isso
+        required : [true , 'Coloca senha'],
+        minlength : [6, 'Tamanho minimo 6'], //da pra definir isso
     },
 
     saldo : {
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema({
 
 //fire a function after doc was saved
 userSchema.post('save', function (doc,next) {
-    console.log('new user saved',doc);
+    console.log('salvou novo usuario',doc);
     next();
 });
 
@@ -61,20 +61,21 @@ userSchema.post('save', function (doc,next) {
 userSchema.pre('save', async function(next) {
     //console.log('user about to be created',this );
     const salt = await bCrypt.genSalt();
-    this.password = await bCrypt.hash(this.password,salt);
+    this.senha = await bCrypt.hash(this.senha,salt);
+    this.saldo = 0;
     next();
 });
 
 
 //login method
 
-userSchema.statics.login = async function(email,password){
+userSchema.statics.login = async function(email,senha){
     const user = await this.findOne( {email} );
     if(!user){
         throw Error('incorrect email');    
     }
 
-    const auth = await bCrypt.compare(password, user.password);
+    const auth = await bCrypt.compare(senha, user.senha);
     if(auth)
         return user;
     throw Error('incorrect password');
