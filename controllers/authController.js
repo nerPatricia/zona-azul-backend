@@ -50,10 +50,9 @@ module.exports.userSignup_get = (req,res) => {
 }
 
 module.exports.userSignup_post = async (req,res) => {
-    //const {nome,sobrenome ,cpf, email, celular, password} = req.body;
+
     try{
         req.body.saldo = 0;
-        //console.log(req.body);
         
         const user = await User.create(req.body);
 
@@ -101,8 +100,8 @@ module.exports.carRegister_post = async (req, res) => {
     let dToken;
     
     if(!token){
-        console.log("erro token");   
-        return ;
+        console.log("erro token");
+        return res.sendStatus(500);
     }
     
     let decodedUser = jwt.verify(token,jwtConfig.key, (err,decodedToken) => {
