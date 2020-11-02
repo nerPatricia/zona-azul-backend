@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const Cars = require('../models/Carro');
+const Carro = require('../models/Carro');
+
 const jwtConfig = require('../config/jwtConfig');
 
 const requireAuth = (req, res, next) => {
@@ -23,67 +24,57 @@ const requireAuth = (req, res, next) => {
 
 };
 
-const checkUser = (req, res, next) => {
+const checkUser = async (req, res, next) => {
     //funcao pra pegar os dados do usuario atual
     //e repassar pro front
     //ai da pra mostrar as infos dele na tela ou qlqer coisa q queira elas
 
     const token = req.cookies.jwt;
+    let dToken;
     if (!token) {
         res.user = null;
-        return;
+        res.locals.user = null;
+        return next();
     }
-
-    jwt.verify(token, jwtConfig.key, async (err, decodedToken) => {
+    jwt.verify(token, jwtConfig.key, (err, decodedToken) => {
         if (err) {
             console.log(err.message);
             res.user = null;
+            res.locals.user = null;
             return next();
         }
-
-        // acho q da pra escolhar quais campos pegar mas preguica
-        let user = await User.findById(decodedToken.id);
-        let cars = await Cars.find({
-            user_id: user._id
-        });
-        //n tem praq dexar a senha exposta tmb ne
-        user.password = "";
-
-        //NAO TO CONSEGUINDO ALTERAR A ESTRUTURA DO RESULTADO DA QUERY, n queria ter q mandar 2 json, pensei em mandar 1 direto com tudo e foda-se hummmmm
-        user = JSON.stringify(user);
-        cars = JSON.stringify(cars);
-        let retorno = {
-            ...user,
-            ...cars
-        };
-        //user.cars = [cars];
-        console.log(retorno);
-
-        //só pros teste com express
-        res.locals.user = user;
-
-        res.user = retorno;
-        next(); //se tiver situações onde tem q fazer mais coisa ainda, talvez esse next de problema, n tenho ctz
+        dToken = decodedToken;
     });
 
-};
+    // let cars = await Cars.find({
+    //     user_id: user._id
+    // });
+    // //n tem praq dexar a senha exposta tmb ne
+    // user.password = "";
 
-const isEmployee = async (req, res, next) => {
-    //pras paginas q precisa ser funcionario (vamo implementar isso msm?)
-    //console.log(res.user);
+    // //NAO TO CONSEGUINDO ALTERAR A ESTRUTURA DO RESULTADO DA QUERY, n queria ter q mandar 2 json, pensei em mandar 1 direto com tudo e foda-se hummmmm
+    // user = JSON.stringify(user);
+    // cars = JSON.stringify(cars);
+    // let retorno = {
+    //     ...user,
+    //     ...cars
+    // };
+    // //user.cars = [cars];
+    // console.log(retorno);
 
-    /*let user = await User.findById(res.users._id);
-    if(user.isEmployee)
-        next();
-    else
-        return res.render('/');
-        */
+    //acho q da pra escolhar quais campos pegar mas preguica
+    let dbUser = await User.findById(dToken.id);
+    user = {
+        saldo: dbUser.saldo,
+        nome: dbUser.nome
+    };
+
+    //só pros teste com express
+    res.locals.user = user;
     next();
 };
 
-
 module.exports = {
     requireAuth,
-    checkUser,
-    isEmployee
+    checkUser
 };

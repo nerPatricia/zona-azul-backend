@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Carro = require('../models/Carro');
 const Vaga = require('../models/Vaga');
+const Estacionamento = require('../models/Estacionamento');
+
 const jwt = require('jsonwebtoken');
 const jwtConfig = require('../config/jwtConfig');
 
@@ -53,10 +55,12 @@ module.exports.userSignup_get = (req, res) => {
 }
 
 module.exports.userSignup_post = async (req, res) => {
-    console.log(req.body);
-    //const {nome, sobrenome ,cpf, email, celular, password} = req.body;
+
     try {
+        req.body.saldo = 0;
+
         const user = await User.create(req.body);
+
         const token = createToken(user._id);
 
         res.cookie('jwt', token, {
@@ -83,11 +87,11 @@ module.exports.login_get = (req, res) => {
 module.exports.login_post = async (req, res) => {
     const {
         email,
-        password
+        senha
     } = req.body;
 
     try {
-        const user = await User.login(email, password)
+        const user = await User.login(email, senha)
         const token = createToken(user._id);
         res.cookie('jwt', token, {
             httpOnly: true,
@@ -112,7 +116,7 @@ module.exports.logout_get = async (req, res) => {
     res.redirect('/');
 }
 
-module.exports.carRegister_post = (req, res) => {
+module.exports.carRegister_post = async (req, res) => {
     const {
         placa,
         tipo,
@@ -127,56 +131,129 @@ module.exports.carRegister_post = (req, res) => {
         marca,
         modelo
     };
+    let dToken;
 
     if (!token) {
         console.log("erro token");
-        return;
+        return res.sendStatus(500);
     }
 
-    let decodedUser = jwt.verify(token, jwtConfig.key, async (err, decodedToken) => {
+    let decodedUser = jwt.verify(token, jwtConfig.key, (err, decodedToken) => {
         if (err) {
             console.log(err.message);
             return;
         }
-
-        let user = await User.findById(decodedToken.id);
-        novoCarro.user_id = user._id;
-        Carro.create(novoCarro);
-        res.sendStatus(200);
+        dToken = decodedToken;
     });
-
-
+    novoCarro.id_user = dtoken.id;
+    let user = await User.findById(dToken.id);
+    novoCarro.user_id = user._id;
+    Carro.create(novoCarro);
+    res.sendStatus(200);
 };
 
-module.exports.addCredit_post = (req, res) => {
+module.exports.addCredit_post = async (req, res) => {
+
     const token = req.cookies.jwt;
     const creditos = req.body.creditos;
+    let dToken;
 
     if (!token) {
-        console.log("1");
+        console.log("erro sem token");
         return;
     }
 
-    let decodedUser = jwt.verify(token, jwtConfig.key, async (err, decodedToken) => {
+    jwt.verify(token, jwtConfig.key, (err, decodedToken) => {
         if (err) {
             console.log(err.message);
-
             return;
         }
+        dToken = decodedToken;
+    });
 
-        let user = await User.findById(decodedToken.id);
-        user.saldo += Number(creditos);
+    let user = await User.findById(dToken.id);
+    user.saldo += Number(creditos);
 
-        User.updateOne({
-            _id: user._id
-        }, {
+    await User.updateOne({
+        _id: user._id
+    }, {
+        saldo: user.saldo
+    }, (err, res2) => {
+        if (err) return console.log(err);
+        console.log("Saldo atualizado");
+        res.send({
             saldo: user.saldo
-        }, (err, res2) => {
-            if (err) return console.log(err);
-            console.log("Saldo atualizado");
-            res.sendStatus(200);
         });
     });
+};
+
+//add nova vaga ao banco
+module.exports.vagaRegister_post = async (req, res) => {
+    const {
+        id_vaga
+    } = req.body;
+    try {
+        novaVaga = await Vaga.create({
+            id_vaga
+        });
+        console.log("nova vaga criada " + novaVaga.id_vaga);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+//registra uma nova utilizacao de vaga
+module.exports.estacionar_post = async (req, res) => {
+    //duracao é o valor em minutos
+    const {
+        placa_carro,
+        id_vaga,
+        duracao
+    } = req.body;
+    try {
+        const hora_inicio = new Date();
+        let hora_fim = new Date(hora_inicio).setMinutes(hora_inicio.getMinutes() + duracao);
+        //console.log(new Date(hora_fim).toUTCString());
+
+        const reserva = await Estacionamento.create({
+            placa_carro,
+            id_vaga,
+            hora_inicio,
+            hora_fim
+        });
+
+        res.send({
+            id_reserva: reserva._id
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+module.exports.get_carros = async (req, res) => {
+
+    const token = req.cookies.jwt;
+
+    let dToken;
+
+    jwt.verify(token, jwtConfig.key, (err, decodedToken) => {
+        if (err) {
+            console.log(err.message);
+            return;
+        }
+        dToken = decodedToken;
+    });
+
+
+    //console.log(dToken.id);
+    const carros = await Carro.find({
+        id_user: dToken.id
+    });
+    console.log(carros);
+    res.send({
+        carros
+    });
+
 };
 
 module.exports.temp = (req, res) => {

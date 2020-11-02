@@ -1,0 +1,39 @@
+'*'
+    GET
+    {}
+    {user : {(nome, saldo) | (null)}}
+
+'/cadastrar-usuario'
+    POST
+    {nome, sobrenome, cpf, email, celular, senha}
+    {user : user._id}
+
+'/login'
+    POST
+    {email, senha}
+    {user : user._id}
+
+'/logout'
+    GET
+    {}
+    {}
+
+'/cadastrar-carro'
+    POST
+    {placa , modelo, tipo , marca}
+    {200 (OK)}
+
+'/add-creditos'
+    POST
+    {creditos}
+    {saldo : novoSaldo}
+
+'/estacionar'
+    POST
+    {id_vaga , duracao, placa_carro}
+    {id_reserva}
+
+'get-carros'
+    GET
+    {}
+    {[carros]}
