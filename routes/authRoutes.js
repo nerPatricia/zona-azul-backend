@@ -1,4 +1,6 @@
-const {Router} = require('express');
+const {
+  Router
+} = require('express');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -11,14 +13,16 @@ router.get('/cadastrar-carro', authController.temp);
 router.post('/cadastrar-carro', authController.carRegister_post);
 
 router.get('/login', authController.login_get);
-router.post('/login',authController.login_post);
+router.post('/login', authController.login_post);
 
-router.get('/logout',authController.logout_get);
+router.get('/logout', authController.logout_get);
 
-router.post('/add-creditos',authController.addCredit_post);
+router.post('/add-creditos', authController.addCredit_post);
 
-//todo
-router.get('/dashboard', authMiddleware.isEmployee, (req,res) => {res.sendStatus(200)});
+// TODO
+router.get('/dashboard', authMiddleware.isEmployee, (req, res) => {
+  res.sendStatus(200)
+});
 router.get('/listar-carros'); //criar metodo pra buscar todos os carros de um usuario
 
 module.exports = router;
